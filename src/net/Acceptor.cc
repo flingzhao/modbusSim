@@ -13,7 +13,7 @@ Acceptor::Acceptor(EventLoop *loop)
     m_Address = new InetAddress("127.0.0.1", 8888);
     m_Socket->bind(m_Address);
     m_Socket->listen();
-    m_Socket->setnonblocking();
+    // m_Socket->setnonblocking();
     m_Channel = new Channel(m_Loop, m_Socket->getFd());
     std::function<void()> callback = std::bind(&Acceptor::acceptConnection, this);
     m_Channel->setReadCallback(callback);

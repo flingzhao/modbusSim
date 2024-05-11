@@ -15,6 +15,7 @@ EventLoop::EventLoop()
 EventLoop::~EventLoop()
 {
     delete m_Epoll;
+    delete m_ThreadPool;
 }
 
 void EventLoop::loop()
@@ -23,7 +24,7 @@ void EventLoop::loop()
     {
         std::vector<Channel *> channels;
         channels = m_Epoll->poll();
-        for(auto ch : channels)
+        for(auto& ch : channels)
         {
             ch->handleEvent();
         } 

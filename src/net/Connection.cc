@@ -18,10 +18,10 @@ Connection::Connection(EventLoop *loop, Socket *socket)
       m_ReadBuffer(nullptr)
 {
     m_Channel = new Channel(m_Loop, m_Socket->getFd());
-    std::function<void()> callback = std::bind(&Connection::echo, this, socket->getFd());
-    m_Channel->setReadCallback(callback);
     m_Channel->enableReading();
     m_Channel->useET();
+    std::function<void()> callback = std::bind(&Connection::echo, this, socket->getFd());
+    m_Channel->setReadCallback(callback);
     m_Channel->setUseThreadPool(true);
     m_ReadBuffer = new Buffer();
 }
@@ -46,20 +46,21 @@ void Connection::echo(int sockfd){
             continue;
         } else if(bytes_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//非阻塞IO，这个条件表示数据全部读取完毕
             printf("finish reading once\n", sockfd);
-            printf("message from client fd %d: %s\n", sockfd, m_ReadBuffer->c_str());
-            errif(write(sockfd, m_ReadBuffer->c_str(), m_ReadBuffer->size()) == -1, "socket write error");
+            // printf("message from client fd %d: %s\n", sockfd, m_ReadBuffer->c_str());
+            // errif(write(sockfd, m_ReadBuffer->c_str(), m_ReadBuffer->size()) == -1, "socket write error");
+            send(sockfd);
             m_ReadBuffer->clear();
             break;
         } else if(bytes_read == 0){  //EOF，客户端断开连接
             printf("EOF, client fd %d disconnected\n", sockfd);
             // close(sockfd);   //关闭socket会自动将文件描述符从epoll树上移除
-            m_DeleteConnectionCallback(m_Socket);
+            m_DeleteConnectionCallback(sockfd);
             break;
         }
     }
 }
 
-void Connection::setDeleteConnectionCallback(std::function<void(Socket *)> callback)
+void Connection::setDeleteConnectionCallback(std::function<void(int)> callback)
 {
     m_DeleteConnectionCallback = callback;
 } 

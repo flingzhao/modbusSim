@@ -9,7 +9,7 @@ Channel::Channel(EventLoop *loop, int _fd)
   events(0), 
   ready(0), 
   inEpoll(false),
-  useThreadPool(false)
+  useThreadPool(true)
 {
 
 }
@@ -41,7 +41,13 @@ void Channel::handleEvent()
 
 void Channel::enableReading()
 {
-    events |= EPOLLIN | EPOLLET;
+    events |= EPOLLIN | EPOLLPRI;
+    m_Loop->updateChannel(this);
+}
+
+void Channel::useET()
+{
+    events |= EPOLLET;
     m_Loop->updateChannel(this);
 }
 
@@ -83,10 +89,4 @@ void Channel::setReadCallback(std::function<void()> cb)
 void Channel::setUseThreadPool(bool use)
 {
     useThreadPool = use;
-}
-
-void Channel::useET()
-{
-    events |= EPOLLET;
-    m_Loop->updateChannel(this);
 }

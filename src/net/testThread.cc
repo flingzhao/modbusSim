@@ -11,6 +11,7 @@
 using namespace std;
 
 void oneClient(int msgs, int wait){
+    printf("one client starts!\n");
     Socket *sock = new Socket();
     InetAddress *addr = new InetAddress("127.0.0.1", 8888);
     sock->connect(addr);
@@ -48,6 +49,8 @@ void oneClient(int msgs, int wait){
         }
         readBuffer->clear();
     }
+    delete sendBuffer;
+    delete readBuffer;
     delete addr;
     delete sock;
 }

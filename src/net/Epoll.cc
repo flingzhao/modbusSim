@@ -7,6 +7,8 @@
 #define MAX_EVENTS 1000
 
 Epoll::Epoll()
+    :epfd{-1}, 
+     events{nullptr}
 {
     epfd = epoll_create1(0);
     errif(-1 == epfd, "epoll create error");
@@ -22,15 +24,6 @@ Epoll::~Epoll()
         epfd = -1;
     }
     delete[] events;
-}
-
-void Epoll::addFd(int fd, uint32_t op)
-{
-    struct epoll_event ev;
-    bzero(&ev, sizeof(ev));
-    ev.data.fd = fd;
-    ev.events = op;
-    errif(-1 == epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev), "epoll add event error");
 }
 
 void Epoll::updateChannel(Channel *channel)
@@ -61,7 +54,6 @@ std::vector<Channel *> Epoll::poll(int timeout)
         Channel *ch = (Channel *)events[i].data.ptr;
         ch->setReady(events[i].events);
         activeChannels.push_back(ch);
-        // activeEvents.push_back(events[i]);
     }
     return activeChannels;
 }
